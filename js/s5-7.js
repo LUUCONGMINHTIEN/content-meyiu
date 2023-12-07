@@ -135,6 +135,46 @@ window.initState = () => {
           showElement(`#${ctrl.id}-${ctrl.value}`, true);     
         },
       }),
+
+
+      ctrl_show_redd: new Control({
+        type: "button",
+        id: "btn-showz",
+        value: "inactive",
+        event_for_active_state: true,
+        ignore_mouseup: true,
+        mouseup: function () {
+          const ctrl = this;
+          ctrl.value = {
+            active: "inactive",
+            inactive: "active",
+          }[ctrl.value];
+
+          ctrl.render();
+          if(ctrl.value == "inactive"){
+            showElement('.note-y-2', true)
+          }else{
+            showElement('.paper-yellow-2', false)
+          }          
+        },
+        mousedown: function () {
+          let ctrl = this;
+          ctrl.render();
+          if(ctrl.value == "inactive"){
+            showElement('.note-y-2', true)
+          } else{
+            showElement('.paper-yellow-2', false)
+          }
+        },
+        render: function () {
+          const ctrl = this;
+          showElement('.paper-yellow-2', true)
+          showElement(`.${ctrl.id}`, false);
+          showElement(`#${ctrl.id}-${ctrl.value}`, true);     
+        },
+      }),
+
+
       ctrl_show_yellow: new Control({
         type: "button",
         id: "btn-show-y",
@@ -152,6 +192,8 @@ window.initState = () => {
           if(ctrl.value == "active"){
             showElement('.note-y-2', false)
             showElement('.paper-yellow-2', true)
+           
+            
           }  
         },
         mousedown: function () {
@@ -160,6 +202,7 @@ window.initState = () => {
           if(ctrl.value == "active"){
             showElement('.note-y-2', false)
             showElement('.paper-yellow-2', true)
+          
           } 
         },
         render: function () {
@@ -172,7 +215,46 @@ window.initState = () => {
       }),
      
 
-      
+      ctrl_show_yellow2: new Control({
+        type: "button",
+        id: "btn-show-z",
+        value: "inactive",
+        event_for_active_state: true,
+        ignore_mouseup: true,
+        mouseup: function () {
+          const ctrl = this;
+          ctrl.value = {
+            active: "inactive",
+            inactive: "active",
+          }[ctrl.value];
+
+          ctrl.render();
+          if(ctrl.value == "active"){
+            showElement('.note-y-2', false)
+            showElement('.paper-yellow-2', true)
+            showElement('#btn-show-y-active', true)
+          }  
+        },
+        mousedown: function () {
+          let ctrl = this;
+          ctrl.render();
+          if(ctrl.value == "active"){
+            showElement('.note-y-2', false)
+            showElement('.paper-yellow-2', true)
+            showElement('#btn-show-y-active', true)
+          } 
+        },
+        render: function () {
+          const ctrl = this;
+          showElement('.note-y-2', true)
+            showElement('.paper-yellow-2', false)
+            showElement('#btn-show-y-active', false)
+          showElement(`.${ctrl.id}`, false);
+          showElement(`#${ctrl.id}-${ctrl.value}`, true);
+        },
+      }),
+
+
       ctrl_drag_col: new Control({
         type: "drag",
         id: "drag-col",
