@@ -215,6 +215,179 @@ window.initState = () => {
       }),
      
 
+      ctrl:new Control({
+        name: "btn-show-line",
+        type: "button",
+        id: "btn-show-line",
+        value: "inactive",
+        event_for_active_state: true,
+        ignore_mouseup: true,
+
+        mouseup: function () {
+            const ctrl = this;
+            g_state.show_popup = false;
+            getControl("btn-show-popup").render();
+            ctrl.value = {
+                active: "inactive",
+                inactive: "active",
+            }[ctrl.value];
+            ctrl.render();
+           
+           if(ctrl.value == "inactive" ){
+            $("#content-H").css("display", "block");
+           }
+           if(ctrl.value == "inactive" ){
+            $("#content-H1").css("display", "none");
+           }
+            
+        //    getEl(`#content-H`).attr("display", `block`);
+          
+         
+        },
+        mousedown: function () {},
+
+        render: function () {
+            const ctrl = this;
+            
+            showElement(`#container-boxer`, ctrl.value == "inactive");
+
+            showElement(`.${ctrl.id}`, false);
+            showElement(`#${ctrl.id}-${ctrl.value}`, true);
+
+        },
+    }),
+
+    ctrl1:new Control({
+      name: "content-box-1",
+      type: "drag",
+      id: "content-box-1",
+      x_scope: [0, 1],
+      scope: [0, 1],
+      minimum: 0.001,
+      value: 0,
+      info: popupInfo,
+      fn_drag: function ({ value, eventName }) {
+          let ctrl = this;
+          ctrl.eventName = eventName;
+
+          if (eventName == "mousedown") {
+              ctrl.offset = {
+                  x: ctrl.curPos.x,
+                  y: ctrl.curPos.y,
+              };
+
+              ctrl.translate = SVGLib.getTranslate(getEl(`#content-box-${1}`));
+
+              // }
+          } else {
+              ctrl.render();
+          }
+
+          if (eventName == "mouseup") {
+              delete ctrl.offset;
+          }
+
+      },
+
+      render: function () {
+          let ctrl = this;
+          if (ctrl.offset) {
+              let { translate } = ctrl;
+
+              if (!ctrl.scopeTx) {
+                  let width = 75;
+                  let height = 75;
+
+                  let initX = 18;
+                  let initY = 18;
+
+                  let minVisibleX = 0.5 * 75;
+
+                  let minVisibleY = 0.5 * 75;
+
+                  console.log(minVisibleX);
+                  console.log(minVisibleY);
+
+                  let scopeTx = [-width + minVisibleX - initX, 350 - minVisibleX - initX];
+                  let scopeTy = [-height + minVisibleY - initY, 350 - initY - minVisibleY];
+
+                  ctrl.scopeTx = scopeTx;
+                  ctrl.scopeTy = scopeTy;
+              }
+
+              let { scopeTx, scopeTy } = ctrl;
+
+              // var layoutLoc = SVGLib.getTranslate("#line-draw");
+
+              // x: t,
+              // y: y0 + (y1 - y0) / (x1 - x0) * (t - x0)
+
+              let x0 = 622.82;
+              let y0 = 622;
+              let x1 = 1060.07;
+              let y1 = 1060;;
+
+              let tx = ctrl.curPos.x - ctrl.offset.x + translate.left;
+              let ty = ctrl.curPos.y - ctrl.offset.y + translate.top;
+
+              let tx_point = tx;
+              let ty_point = y0 + ((y1 - y0) / (x1 - x0)) * (tx - x0);
+
+              let isMeetBounding = false;
+              if (tx_point > scopeTx[1]) {
+                  isMeetBounding = true;
+                  tx_point = scopeTx[1];
+                  // console.log("meet bounding tx_point max");
+              }
+              if (tx_point < scopeTx[0]) {
+                  isMeetBounding = true;
+                  tx_point = scopeTx[0];
+                  // console.log("meet bounding tx_point min");
+              }
+
+              if (ty_point > scopeTy[1]) {
+                  isMeetBounding = true;
+                  ty_point = scopeTy[1];
+                  // console.log("meet bounding ty_point min");
+              }
+              if (ty_point < scopeTy[0]) {
+                  isMeetBounding = true;
+                  ty_point = scopeTy[0];
+                  // console.log("meet bounding ty_point max");
+              }
+
+              getEl(`#content-box-${1}`).attr("transform", `translate(${tx_point} ${ty_point})`);
+              getEl(`#content-circle`).attr("transform", `translate(${tx_point - 20.403457641601562} ${ty_point +49.59585032127734})`);
+              getEl(`#content-H`).attr("transform", `translate(${tx_point - 38.15} ${ty_point - -23.5})`);
+
+              let arrayLine = {
+                  x1: -175,
+                  y1: 90,
+                  x2: tx_point - 10,
+                  y2: ty_point + 58,
+                  name: "EH",
+              };
+
+              let arrayLine_2 = {
+                  x1: 108,
+                  y1: 352.8,
+                  x2: tx_point - 10,
+                  y2: ty_point + 58,
+                  name: "GH",
+              };
+
+              EditLine(arrayLine_2);
+
+              EditLine(arrayLine);
+
+              let arrayPolygon = {
+                  x: tx_point + 522.5,
+                  y: ty_point + 282.5,
+              };
+              EditPolygon(arrayPolygon);
+          }
+      },
+  }),
       ctrl_show_yellow2: new Control({
         type: "button",
         id: "btn-show-z",
@@ -589,4 +762,680 @@ $(document).ready(function () {
   function clearGridRed() {
     svgContainerRed.innerHTML = '';
   }
+
+//   const resetCoorBox = () => {
+//     for (let i = 1; i <= 17; i++) {
+//         $.each(coor_allBox, function (key, value) {
+//             if (i == key) {
+//                 getEl(`#content-box-${i}`).attr("transform", `translate(${value.x} ${value.y})`);
+//             }
+//         });
+//     }
+    // getEl(`#content-H`).attr("transform", `translate(80 140)`);
+    
+//         // $("#content-H1").css("display", "block");
+//         // getEl(`#content-H1`).attr("transform", `translate(13 145)`);
+//         // $("#content-H").css("display", "none");
+//         // getEl(`#content-H`).attr("transform", `translate(80 140)`);
+//     getEl(`#content-circle`).attr("transform", `translate(97.79008483886719 166.1038242639765)`);
+
+//     let arrayLine = {
+//         x1: -175,
+//         y1: 90,
+//         x2: 160.5,
+//         y2: 175,
+//         name: "EH",
+//     };
+
+//     let arrayLine_2 = {
+//         x1: 108,
+//         y1: 352.8,
+//         x2: 108,
+//         y2: 175,
+//         name: "GH",
+//     };
+//     let arrayPolygon = {
+//         x: 797.47,
+//         y: 241.99,
+//     };
+
+//     EditLine(arrayLine_2);
+
+//     EditLine(arrayLine);
+
+//     EditPolygon(arrayPolygon);
+// };
+function EditLine(arayLine) {
+  $(`#line-${arayLine.name}`).attr({
+      x1: arayLine.x1,
+      y1: arayLine.y1,
+      x2: arayLine.x2,
+      y2: arayLine.y2,
+  });
+}
+// mafu cam 
+function EditPolygon(arayPolygon) {
+  $(`#triangle-color`).attr({
+      points: `472.5 160.5 ${arayPolygon.x},${arayPolygon.y} 312.74 402,417.79 `,
+  });
+}
+// line 
+// const createLine = () => {
+//   let lineEH = $(
+//       SVGLib.createTag("line", {
+//           x1: -157,
+//           y1: 90,
+//           x2: 109,
+//           y2: 175,
+//           id: "line-EH",
+//           style: `fill: none; stroke: #000; stroke-linejoin: round; stroke-width: 4px;`,
+//       })
+//   );
+
+//   let lineGH = $(
+//       SVGLib.createTag("line", {
+//           x1: 108,
+//           y1: 352.8,
+//           x2: 108,
+//           y2: 175,
+//           id: "line-GH",
+//           style: `fill: none; stroke: #000; stroke-linejoin: round; stroke-width: 4px;`,
+//       })
+//   );
+
+//   $(`#create-line`).append(lineEH);
+//   $(`#create-line`).append(lineGH);
+// };
+$(document).ready(function () {
+  createLine();
+
+  initState();
+  loadConfigAndStaticSVG();
+  // if (g_state.is_init_canvas) initCanvas();
+  initDragEvent(_.flattenDeep(["Mycanvas"]));
+
+  $(window).resize(function () {
+      fnCalculateSVGRatio();
+  });
+  fnCalculateSVGRatio();
+
+  let dZoom = 0.1;
+  let isPinch = false;
+  let isMouseDownZoomArea = false;
+
+  let prevPos = {
+      x: 0,
+      y: 0,
+  };
+
+  var svg = document.querySelector("svg");
+  // Create an SVGPoint for future math
+  var pt = svg.createSVGPoint();
+
+  function cursorPoint(evt) {
+      var c = /Edge/.test(window.navigator.userAgent) ? document.getElementById("svg") : svg;
+      pt.x = evt.clientX || evt.x || 0;
+      pt.y = evt.clientY || evt.y || 0;
+      var ctm = c.getScreenCTM();
+      var inverse = ctm.inverse();
+      var p = pt.matrixTransform(inverse);
+
+      let ratio = 1;
+      let isChrome = !!navigator.userAgent.match(/Chrome/i) || window.chrome;
+
+      if (getEl("#stage_1").length && !isChrome) {
+          let stg1El = getEl("#stage_1")[0];
+          let scale = stg1El.getBoundingClientRect().width / stg1El.offsetWidth;
+          if (scale) {
+              ratio = 1 / scale;
+
+              console.log("scale", scale);
+          }
+      }
+
+      return {
+          x: p.x * ratio,
+          y: p.y * ratio,
+      };
+  }
+
+  window.cursorPoint = cursorPoint;
+
+  // var svg = document.querySelector("svg");
+  // // Create an SVGPoint for future math
+  // var pt = svg.createSVGPoint();
+
+  // const fnControlScrollbar = (ctrl) => {
+  //     const el = $(`#${ctrl.id}`);
+  //     const scrollPoint = $(ctrl.scroll_point);
+  //     let isDrag = false;
+  //     let prevValue = null;
+
+  //     let fnDrag = (event, isSnap, eventName) => {
+  //         g_latestMousePress = ctrl.id;
+  //         event.stopPropagation();
+
+  //         const [x0, x1] = ctrl.x_scope || [];
+  //         const [y0, y1] = ctrl.y_scope || [];
+
+  //         var layoutLoc = SVGLib.getTranslate(el);
+  //         var curPos = cursorPoint(event);
+
+  //         var x = curPos.x - layoutLoc.left;
+  //         var y = -(curPos.y - layoutLoc.top);
+
+  //         let percent = (x - x0) / (x1 - x0);
+  //         if (ctrl.y_scope) {
+  //             percent = (y1 - Math.abs(y)) / (y1 - y0);
+  //         }
+
+  //         if (percent < 0) percent = 0;
+  //         if (percent > 1) percent = 1;
+
+  //         let roundLength = _.get(ctrl.minimum.toString().split(".")[1], "length", 0);
+
+  //         ctrl.value =
+  //             // ctrl.scope[0] +
+  //             _.round(percent * (ctrl.scope[1] - ctrl.scope[0]) + ctrl.scope[0], roundLength);
+
+  //         if (ctrl.value < ctrl.scope[0]) ctrl.value = ctrl.scope[0];
+  //         if (ctrl.value > ctrl.scope[1]) ctrl.value = ctrl.scope[1];
+
+  //         const stopPoints = ctrl.snap_point || [];
+  //         const stopValue = stopPoints.find((x) => Math.abs(ctrl.value - x) < 1.2 * ctrl.minimum);
+  //         if (stopValue != undefined) {
+  //             ctrl.value = stopValue;
+  //         } else if (isSnap) {
+  //             ctrl.value = _.round(_.round(ctrl.value / ctrl.minimum) * ctrl.minimum, roundLength);
+  //         }
+
+  //         if (eventName == "mousedown") {
+  //             prevValue = ctrl.value;
+  //         }
+
+  //         ctrl.render();
+
+  //         if (ctrl.fn_drag)
+  //             ctrl.fn_drag({
+  //                 prevValue,
+  //                 eventName,
+  //             });
+
+  //         if (eventName == "mousemove") {
+  //             prevValue = ctrl.value;
+  //         }
+
+  //         keepScrollBarNotMove(el);
+  //     };
+
+  //     $(el)
+  //         .on("mousedown", function (event) {
+  //             isDrag = true;
+  //             prevValue = null;
+  //             fnDrag(event, true, "mousedown");
+  //         })
+  //         .css("position", "absolute");
+
+  //     $(document).on("mousemove", function (event) {
+  //         if (isDrag) {
+  //             fnDrag(event, false, "mousemove");
+  //             keepScrollBarNotMove(el);
+  //         }
+  //     });
+
+  //     $(document).on("mouseup", function (event) {
+  //         if (isDrag) {
+  //             fnDrag(event, true, "mouseup");
+  //             keepScrollBarNotMove(el);
+  //             isDrag = false;
+  //             prevValue = null;
+  //         }
+  //     });
+  // };
+
+  // const fnControlDrag = (ctrl) => {
+  //     console.log("fnControlDrag initial", ctrl.name);
+  //     let elSelector = ctrl.id ? `#${ctrl.id}` : `.${ctrl.class}`;
+  //     let el = $(elSelector);
+  //     let isDrag = false;
+  //     let prevValue = null;
+
+  //     ctrl.init_el = el;
+
+  //     let prev = { x: 0, y: 0 };
+  //     let fnDrag = (event, isSnap, eventName, isKeepCheckDist) => {
+  //         g_latestMousePress = ctrl.id || ctrl.class;
+  //         console.log("fnDrag", ctrl.name);
+  //         event.stopPropagation();
+
+  //         const [x0, x1] = ctrl.x_scope || [];
+  //         const [y0, y1] = ctrl.y_scope || [];
+
+  //         var layoutLoc = SVGLib.getTranslate(el);
+  //         // console.log("layoutLoc", layoutLoc);
+  //         var curPos = cursorPoint(event);
+
+  //         var x = curPos.x - layoutLoc.left;
+  //         var y = curPos.y - layoutLoc.top;
+
+  //         ctrl.curPos = curPos;
+
+  //         let dx = event.clientX - prev.x;
+  //         let dy = event.clientY - prev.y;
+  //         if (!isKeepCheckDist && Math.pow(dx, 2) + Math.pow(dy, 2) < 5) return;
+
+  //         prev = {
+  //             x: event.clientX,
+  //             y: event.clientY,
+  //         };
+
+  //         if (x < x0) x = x0;
+  //         else if (x > x1) x = x1;
+
+  //         if (y < y0) y = y0;
+  //         else if (y > y1) y = y1;
+
+  //         ctrl.value = { x, y };
+
+  //         if (eventName == "mousedown") {
+  //             prevValue = ctrl.value;
+  //         }
+
+  //         // console.log(ctrl.name, ctrl.value);
+
+  //         ctrl.render();
+
+  //         if (ctrl.fn_drag)
+  //             ctrl.fn_drag({
+  //                 prevValue,
+  //                 eventName,
+  //             });
+
+  //         if (eventName == "mousemove") {
+  //             prevValue = ctrl.value;
+  //         }
+
+  //         // console.log("prevValue", prevValue, eventName);
+
+  //         keepScrollBarNotMove(el);
+  //     };
+
+  //     if (ctrl.is_dynamic) {
+  //         $(document).on("mousedown", elSelector, function (event) {
+  //             ctrl.id = $(this).attr("id");
+  //             ctrl.el = this;
+
+  //             isDrag = true;
+  //             prevValue = null;
+  //             ctrl.is_drag = false;
+  //             ctrl.is_drag_real = false;
+
+  //             fnDrag(event, true, "mousedown", true);
+  //             prev = { x: 0, y: 0 };
+  //         });
+  //     } else {
+  //         $(el)
+  //             .on("mousedown", function (event) {
+  //                 ctrl.id = $(this).attr("id");
+  //                 ctrl.el = this;
+
+  //                 isDrag = true;
+  //                 prevValue = null;
+  //                 ctrl.is_drag = false;
+  //                 ctrl.is_drag_real = false;
+
+  //                 fnDrag(event, true, "mousedown", true);
+  //                 prev = { x: 0, y: 0 };
+  //             })
+  //             .css("position", "absolute");
+  //     }
+
+  //     let prevMove = { x: 0, y: 0 };
+  //     $(document).on("mousemove", function (event) {
+  //         if (isDrag) {
+  //             let dx = event.clientX - prevMove.x;
+  //             let dy = event.clientY - prevMove.y;
+  //             if (Math.pow(dx, 2) + Math.pow(dy, 2) < 5) return;
+
+  //             ctrl.is_drag = true;
+  //             ctrl.is_drag_real = true;
+
+  //             fnDrag(event, false, "mousemove");
+  //             keepScrollBarNotMove(el);
+  //             prevMove = {
+  //                 x: event.clientX,
+  //                 y: event.clientY,
+  //             };
+  //         } else if (ctrl.mousemove) {
+  //             let dx = event.clientX - prevMove.x;
+  //             let dy = event.clientY - prevMove.y;
+  //             if (Math.pow(dx, 2) + Math.pow(dy, 2) < 5) return;
+  //             ctrl.mousemove(event);
+
+  //             prevMove = {
+  //                 x: event.clientX,
+  //                 y: event.clientY,
+  //             };
+  //         }
+  //     });
+
+  //     // $(document).on("mouseup", function (event) {
+  //     //     if (isDrag) {
+  //     //         fnDrag(event, true, "mouseup", true);
+  //     //         keepScrollBarNotMove(el);
+  //     //         isDrag = false;
+  //     //         prevValue = null;
+  //     //         ctrl.is_drag = false;
+  //     //         delete ctrl.el;
+  //     //     }
+  //     // });
+  //     // if (ctrl.mouseover) {
+  //     //     $(el).on("mouseenter", function (event) {
+  //     //         ctrl.mouseover(event);
+  //     //         ctrl.is_hover = true;
+  //     //     });
+  //     // }
+  //     // if (ctrl.mouseout) {
+  //     //     $(el).on("mouseleave", function (event) {
+  //     //         ctrl.mouseout(event);
+  //     //         ctrl.is_hover = false;
+  //     //     });
+  //     // }
+  // };
+
+  // const fnControlRadio = (ctrl) => {
+  //     console.log("fnControlRatio initial", ctrl.name);
+  //     let el = $(`#${ctrl.id}`);
+  //     $(el).on("mousedown", function (event) {
+  //         event.preventDefault();
+  //         if (!ctrl.ignore_event_tracking) g_eventId += 1;
+  //         g_latestMousePress = ctrl.id;
+
+  //         if (ctrl.mousedown) ctrl.mousedown();
+  //     });
+  // };
+
+  // const fnControlClickable = (ctrl) => {
+  //     console.log("fnControlClickable initial", ctrl.name);
+  //     let el = $(ctrl.id ? `#${ctrl.id}` : `.${ctrl.class}`);
+  //     $(el).on("mousedown", function (event) {
+  //         ctrl.id = $(this).attr("id");
+  //         event.preventDefault();
+  //         if (!ctrl.ignore_event_tracking) g_eventId += 1;
+  //         g_latestMousePress = ctrl.id || ctrl.class;
+
+  //         if (ctrl.mousedown) ctrl.mousedown();
+  //     });
+  // };
+
+  // const fnControlCheckbox = (ctrl) => {
+  //     console.log("fnControlCheckbox initial", ctrl.name);
+  //     let el = $(`#${ctrl.id}`);
+  //     $(el).on("mousedown", function (event) {
+  //         event.preventDefault();
+  //         if (!ctrl.ignore_event_tracking) g_eventId += 1;
+  //         g_latestMousePress = ctrl.id;
+
+  //         if (ctrl.mousedown) ctrl.mousedown();
+  //     });
+  // };
+  // const fnControlButton = (ctrl) => {
+  //     console.log(
+  //         "fnControlButton initial",
+  //         ctrl.is_group
+  //             ? Object.keys(ctrl.flow_member)
+  //                   .map((x) => `${ctrl.name}-${x}`)
+  //                   .join(", ")
+  //             : ctrl.name
+  //     );
+
+  //     let buttons = [];
+  //     if (ctrl.is_group) {
+  //         buttons = [
+  //             ...Object.keys(ctrl.flow_member).map((x) => `#${ctrl.id}-${x}-inactive`), // inactive state
+  //             ...(ctrl.event_for_active_state ? Object.keys(ctrl.flow_member).map((x) => `#${ctrl.id}-${x}-active`) : []), // active state
+  //         ].filter((x) => x);
+  //     } else {
+  //         buttons = [`#${ctrl.id}-inactive`];
+  //         if (ctrl.event_for_active_state) {
+  //             buttons.push(`#${ctrl.id}-active`);
+  //         }
+  //     }
+
+  //     let els = $(buttons.join(", "));
+
+  //     // els.on("mousedown", function (e) {
+  //     //     if (!ctrl.ignore_event_tracking) g_eventId += 1;
+  //     //     let currentEventId = g_eventId;
+  //     //     g_latestMousePress = ctrl.id;
+  //     //     ctrl.from_state = ctrl.value;
+  //     //     // ctrl.value = "active";
+  //     //     ctrl.render();
+
+  //     //     if (ctrl.type == "button" && ctrl.from_state == "active" && ctrl.event_for_active_state) {
+  //     //         // do nothing
+  //     //     } else {
+  //     //         animateButtonEffect(`#${ctrl.id}-group`, true, null, 0);
+  //     //     }
+
+  //     //     if (ctrl.allow_press) {
+  //     //         let { mouse_press_delay } = ctrl;
+  //     //         let itvPress;
+  //     //         let count = 0;
+  //     //         let fn = () => {
+  //     //             count += 1;
+  //     //             if (currentEventId != g_eventId) {
+  //     //                 clearInterval(itvPress);
+
+  //     //                 return;
+  //     //             }
+  //     //             ctrl.fn_mouseup({ isKeyPress: true, count });
+  //     //         };
+
+  //     //         setTimeout(() => {
+  //     //             if (currentEventId == g_eventId) {
+  //     //                 g_isPressMouse = true;
+  //     //                 fn();
+  //     //                 itvPress = setInterval(fn, mouse_press_delay);
+  //     //             }
+  //     //         }, 1000);
+  //     //     }
+
+  //     //     if (ctrl.mousedown) ctrl.mousedown();
+  //     // });
+  // };
+
+  // g_state.controls.forEach((ctrl) => {
+  //     switch (ctrl.type) {
+  //         case "scrollbar":
+  //             fnControlScrollbar(ctrl);
+  //             break;
+
+  //         case "drag":
+  //             fnControlDrag(ctrl);
+  //             break;
+
+  //         case "radio":
+  //             fnControlRadio(ctrl);
+
+  //             break;
+
+  //         case "checkbox":
+  //             fnControlCheckbox(ctrl);
+  //             break;
+
+  //         case "button":
+  //             fnControlButton(ctrl);
+  //             break;
+
+  //         case "clickable":
+  //             fnControlClickable(ctrl);
+  //             break;
+
+  //         default:
+  //             break;
+  //     }
+
+  //     if (ctrl.render) ctrl.render();
+  // });
+
+  // applyControlChange(true);
+
+  // $(document).on("mouseup", async function (e) {
+  //     g_isMouseDown = false;
+  //     console.log("g_latestMousePress mouseup", g_latestMousePress);
+
+  //     let fn = () => {
+  //         let ctrl = g_state.controls.find((c) => c.id == g_latestMousePress || c.class == g_latestMousePress);
+  //         if (ctrl) {
+  //             if (!ctrl.ignore_event_tracking) g_eventId += 1;
+  //             if (!ctrl.ignore_mouseup) {
+  //                 if (ctrl.type == "button") {
+  //                     if (ctrl.is_group) {
+  //                         ctrl.value = "inactive";
+  //                         ctrl.value1 = ctrl.flow_member[ctrl.value1];
+  //                         ctrl.render();
+  //                     } else {
+  //                         ctrl.value = "disabled";
+  //                         ctrl.render();
+  //                     }
+
+  //                     if (ctrl.mouseup_immediately) ctrl.mouseup_immediately();
+
+  //                     // animateButtonEffect(
+  //                     //     `#${ctrl.id}-group`,
+  //                     //     false,
+  //                     //     function () {
+  //                     //         ctrl.value = "inactive";
+  //                     //         ctrl.render();
+
+  //                     //         if (ctrl.mouseup) ctrl.mouseup(e);
+  //                     //     },
+  //                     //     0
+  //                     // );
+  //                     if (ctrl.mouseup) ctrl.mouseup(e);
+  //                 } else if (ctrl.mouseup) ctrl.mouseup(e);
+  //             } else if (ctrl.type == "button" && ctrl.event_for_active_state) {
+  //                 ctrl.mouseup(e);
+  //             }
+  //         }
+
+  //         g_latestMousePress = "";
+  //         g_isPressMouse = false;
+
+  //         console.log("g_latestMousePress mouseup", g_latestMousePress);
+  //     };
+
+  //     if (
+  //         (!g_latestMousePress ||
+  //             (g_latestMousePress && g_latestMousePress != "btn-show-popup" && g_latestMousePress.indexOf("drag-popup") == -1)) &&
+  //         g_state.show_popup
+  //     ) {
+  //         g_state.show_popup = false;
+  //         let ctrlShowPopup = getControl("btn-show-popup");
+  //         ctrlShowPopup.value = "inactive";
+  //         ctrlShowPopup.render();
+  //     }
+
+  //     fn();
+  // });
+
+  // setTimeout(async () => {
+  //     initPallet();
+  //     await delay(100);
+
+  //     initMain();
+  //     await delay(100);
+
+  //     showElement("#divBody, #stage_0", true).css("opacity", "1");
+  // }, 100);
+});
+
+// let controlValuesPrev = JSON.stringify({});
+
+// const applyControlChange = (isSkipCache) => {
+//   let controlValues = JSON.stringify({
+//       ..._.pick(g_state, ["menu", "menu_item_selected", "menu_data"]),
+//       controls: g_state.controls.filter((x) => !x.is_skip_check_reload).map((x) => _.pick(x, ["name", "value"])),
+//   });
+
+//   if (controlValues == controlValuesPrev && !isSkipCache) {
+//       return;
+//   }
+//   controlValuesPrev = controlValues;
+
+//   console.log("applyControlChange");
+
+//   if (!$(".shape_origin_dash").length) {
+//       Object.keys(g_state.menu_data).forEach((k) => {
+//           let elItem = getEl(`.select-menu-item-${k}`);
+//           let menuData = g_state.menu_data[k];
+
+//           elItem.append(
+//               SVGLib.createTag("polygon", {
+//                   style: CONFIG.colors.shape_rotate,
+//                   class: "shape_view",
+//               })
+//           );
+
+//           elItem.append(
+//               SVGLib.createTag("path", {
+//                   d: menuData.points_origin
+//                       .map((p, idx) => `${idx == 0 ? "M" : "L"}${p.x} ${p.y}${idx == menuData.points_origin.length - 1 ? "Z" : ""}`)
+//                       .join(" "),
+//                   style: CONFIG.colors.shape_origin_dash,
+//                   class: "shape_origin_dash",
+//               })
+//           );
+//           elItem.append(
+//               SVGLib.createTag("polygon", {
+//                   style: "fill: transparent",
+//                   class: "shape_rotate",
+//               })
+//           );
+
+//           elItem.append(
+//               SVGLib.createTag("circle", {
+//                   cx: menuData.center.x,
+//                   cy: menuData.center.y,
+//                   r: 8,
+//                   style: CONFIG.colors.shape_center,
+//                   class: "shape_center",
+//               })
+//           );
+
+//           elItem.append(
+//               SVGLib.createTag("line", {
+//                   style: CONFIG.colors.shape_angle_line_from,
+//                   class: "shape_angle_line_from",
+//               })
+//           );
+
+//           elItem.append(
+//               SVGLib.createTag("line", {
+//                   style: CONFIG.colors.shape_angle_line_to,
+//                   class: "shape_angle_line_to",
+//               })
+//           );
+
+//           elItem.append(
+//               SVGLib.createTag("polyline", {
+//                   style: CONFIG.colors.shape_angle_curve_in,
+//                   class: "shape_angle_curve_in",
+//               })
+//           );
+//           elItem.append(
+//               SVGLib.createTag("polyline", {
+//                   style: CONFIG.colors.shape_angle_curve_in,
+//                   class: "shape_angle_curve_out",
+//               })
+//           );
+//           elItem.append(
+//               SVGLib.createTag("g", {
+//                   class: "lines-drawed",
+//               })
+//           );
+//       });
+//   }
+// };
  
